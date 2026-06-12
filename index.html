@@ -32,6 +32,7 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
     <link rel="icon" href="Assets/jetmax-icon.ico" type="image/x-icon">
 </head>
@@ -182,9 +183,16 @@
                     <i class="fas fa-coins"></i>
                     <span>Fly Miles: <strong id="flyMiles">0</strong></span>
                 </div>
-                <div class="detail-item">
+                <div class="detail-item birthday-input-container">
                     <i class="fas fa-birthday-cake"></i>
-                    <span>Birthday: <strong id="birthday">Not set</strong></span>
+                    <span>
+                        Birthday: 
+                        <strong id="birthday">Not set</strong>
+                        <input type="date" id="birthdayInput" class="birthday-input" style="display:none; margin-left:10px;">
+                        <button id="editBirthdayBtn" class="edit-btn" style="margin-left:10px; background:none; border:none; color:#0066cc; cursor:pointer;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </span>
                 </div>
             </div>
             <button class="logout-btn" id="logoutBtn">Logout</button>
@@ -240,6 +248,7 @@
 
 
 
+    <script src="JS/flymiles.js"></script>
     <script src="JS/index-script.js"></script>
 </body>
 </html>

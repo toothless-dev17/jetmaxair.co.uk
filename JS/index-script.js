@@ -58,7 +58,7 @@ function openAuthModal() {
 }
 
 // Open profile modal when user is logged in
-function openProfileModal(user) {
+async function openProfileModal(user) {
     // Update profile information
     profileEmail.textContent = user.email || 'guest@example.com';
     profileName.textContent = user.displayName || 'Guest User';
@@ -70,17 +70,17 @@ function openProfileModal(user) {
         profileImg.src = ''; // Reset to default if no photo
     }
     
-    // Get additional user data from Firestore (if we had it, currently using defaults)
-    // For now, use some sample data - in production you'd fetch from Firebase Firestore
-    flyMilesEl.textContent = user.metadata.creationTime ? Math.floor(Math.random() * 5000) + 1000 : 0; // Random miles for demo
+    // Show loading state while fetching data
+    flyMilesEl.textContent = 'Loading...';
+    birthdayEl.textContent = 'Loading...';
     
-    // Check if user has a birthday set (Google provides this if available, otherwise 'Not set')
-    birthdayEl.textContent = 'Not set';
-    
-    // Show the profile modal
+    // Show the profile modal first so users see something is happening
     profileModal.classList.add('active');
     profileOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    // Use FlyMilesManager to get user's actual fly miles data (async)
+    await FlyMilesManager.updateProfileCard(user);
 }
 
 // Close profile modal

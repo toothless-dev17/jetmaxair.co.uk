@@ -252,6 +252,21 @@ header {
     object-fit: cover;
 }
 
+.birthday-input {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.edit-btn:hover {
+    color: #004c99 !important;
+}
+
+.birthday-input-container {
+    align-items: center;
+}
+
 .nav-item {
     position: relative;
 }
