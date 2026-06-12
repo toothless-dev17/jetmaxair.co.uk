@@ -2,9 +2,9 @@
 const FlyMilesManager = {
     // Firestore reference - will be initialized when Firebase is ready
     db: null,
-    
+
     // Initialize - set up Firestore connection
-    init: function() {
+    init: function () {
         // Wait for Firebase to be available
         if (typeof firebase !== 'undefined') {
             this.db = firebase.firestore();
@@ -14,26 +14,26 @@ const FlyMilesManager = {
             setTimeout(() => this.init(), 500);
         }
     },
-    
+
     // Get user document reference - stores data in Firestore "users" collection
-    getUserDoc: function(userEmail) {
+    getUserDoc: function (userEmail) {
         if (!this.db || !userEmail) return null;
-        
+
         // Use email as document ID (normalized to lowercase)
         const normalizedEmail = userEmail.toLowerCase().replace(/\./g, ','); // Firestore doesn't allow dots in IDs
         return this.db.collection('users').doc(normalizedEmail);
     },
-    
+
     // Get fly miles for a specific user email - fetches from Firestore
-    getFlyMiles: async function(userEmail) {
+    getFlyMiles: async function (userEmail) {
         if (!userEmail) return 0;
-        
+
         const userDoc = this.getUserDoc(userEmail);
         if (!userDoc) return 0;
-        
+
         try {
             const docSnapshot = await userDoc.get();
-            
+
             if (docSnapshot.exists) {
                 const data = docSnapshot.data();
                 console.log(`Retrieved data for ${userEmail}:`, data);
@@ -56,14 +56,14 @@ const FlyMilesManager = {
             return 0;
         }
     },
-    
+
     // Add miles to a user's account - updates Firestore
-    addFlyMiles: async function(userEmail, milesToAdd) {
+    addFlyMiles: async function (userEmail, milesToAdd) {
         if (!userEmail || milesToAdd <= 0) return 0;
-        
+
         const userDoc = this.getUserDoc(userEmail);
         if (!userDoc) return 0;
-        
+
         try {
             // Atomically add miles to avoid race conditions
             await userDoc.update({
@@ -71,7 +71,7 @@ const FlyMilesManager = {
                 lifetimeMiles: firebase.firestore.FieldValue.increment(milesToAdd),
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             });
-            
+
             const updatedDoc = await userDoc.get();
             const updatedData = updatedDoc.data();
             console.log(`Added ${milesToAdd} miles to ${userEmail}. New balance: ${updatedData.miles}`);
@@ -94,14 +94,14 @@ const FlyMilesManager = {
             return 0;
         }
     },
-    
+
     // Set birthday for a user - saves to Firestore
-    setBirthday: async function(userEmail, birthday) {
+    setBirthday: async function (userEmail, birthday) {
         if (!userEmail || !birthday) return;
-        
+
         const userDoc = this.getUserDoc(userEmail);
         if (!userDoc) return;
-        
+
         try {
             await userDoc.update({
                 birthday: birthday,
@@ -124,14 +124,14 @@ const FlyMilesManager = {
             console.error('Error setting birthday:', error);
         }
     },
-    
+
     // Get birthday for a user - fetches from Firestore
-    getBirthday: async function(userEmail) {
+    getBirthday: async function (userEmail) {
         if (!userEmail) return 'Not set';
-        
+
         const userDoc = this.getUserDoc(userEmail);
         if (!userDoc) return 'Not set';
-        
+
         try {
             const docSnapshot = await userDoc.get();
             if (docSnapshot.exists) {
@@ -144,37 +144,37 @@ const FlyMilesManager = {
             return 'Not set';
         }
     },
-    
+
     // Update profile card with user's flymiles data
-    updateProfileCard: async function(user) {
+    updateProfileCard: async function (user) {
         if (!user || !user.email) {
             document.getElementById('flyMiles').textContent = '0';
             document.getElementById('birthday').textContent = 'Not set';
             return;
         }
-        
+
         const userEmail = user.email;
-        
+
         // Get data from Firestore (async)
         const miles = await this.getFlyMiles(userEmail);
         const birthday = await this.getBirthday(userEmail);
-        
+
         // Update the UI elements
         const flyMilesEl = document.getElementById('flyMiles');
         const birthdayEl = document.getElementById('birthday');
         const birthdayInput = document.getElementById('birthdayInput');
         const editBirthdayBtn = document.getElementById('editBirthdayBtn');
-        
+
         if (flyMilesEl) flyMilesEl.textContent = miles.toLocaleString();
         if (birthdayEl) birthdayEl.textContent = birthday;
-        
+
         // Set up birthday edit functionality
         if (editBirthdayBtn && birthdayInput) {
             // Remove any existing event listeners to prevent duplicates
             const newEditBtn = editBirthdayBtn.cloneNode(true);
             editBirthdayBtn.parentNode.replaceChild(newEditBtn, editBirthdayBtn);
-            
-            newEditBtn.addEventListener('click', function() {
+
+            newEditBtn.addEventListener('click', function () {
                 birthdayEl.style.display = 'none';
                 newEditBtn.style.display = 'none';
                 birthdayInput.style.display = 'inline-block';
@@ -183,12 +183,12 @@ const FlyMilesManager = {
                 }
                 birthdayInput.focus();
             });
-            
+
             // Handle birthday input save
             const newInput = birthdayInput.cloneNode(true);
             birthdayInput.parentNode.replaceChild(newInput, birthdayInput);
-            
-            newInput.addEventListener('change', async function() {
+
+            newInput.addEventListener('change', async function () {
                 const selectedDate = newInput.value;
                 if (selectedDate) {
                     await FlyMilesManager.setBirthday(userEmail, selectedDate);
@@ -199,9 +199,9 @@ const FlyMilesManager = {
                     alert('Birthday saved successfully! 🎂');
                 }
             });
-            
+
             // Cancel if input loses focus without selecting a date
-            newInput.addEventListener('blur', function() {
+            newInput.addEventListener('blur', function () {
                 if (!newInput.value) {
                     newInput.style.display = 'none';
                     birthdayEl.style.display = 'inline';
@@ -209,28 +209,28 @@ const FlyMilesManager = {
                 }
             });
         }
-        
+
         console.log(`Profile card updated for ${userEmail}: ${miles} miles`);
     },
-    
+
     // Add miles when user completes a flight (example function)
-    addFlightMiles: function(userEmail, flightDistance) {
+    addFlightMiles: function (userEmail, flightDistance) {
         // Calculate miles based on flight distance (1 mile per km flown)
         const milesEarned = Math.floor(flightDistance);
         return this.addFlyMiles(userEmail, milesEarned);
     },
-    
+
     // Show flymiles leaderboard (for future use)
-    getLeaderboard: async function() {
+    getLeaderboard: async function () {
         if (!this.db) return [];
-        
+
         try {
             // Get top 10 users by lifetime miles
             const snapshot = await this.db.collection('users')
                 .orderBy('lifetimeMiles', 'desc')
                 .limit(10)
                 .get();
-            
+
             const leaderboard = [];
             snapshot.forEach(doc => {
                 leaderboard.push({
@@ -238,14 +238,50 @@ const FlyMilesManager = {
                     ...doc.data()
                 });
             });
-            
+
             return leaderboard;
         } catch (error) {
             console.error('Error getting leaderboard:', error);
             return [];
         }
+    },
+
+    // --- ADMIN FUNCTIONS (only for you to use) ---
+    adminUpdateUserMiles: async function(userEmail, newMiles) {
+        // YOU can modify ANY user's miles (only works if you're logged in as admin)
+        const docRef = this.getUserDoc(userEmail);
+        try {
+            await docRef.update({
+                miles: newMiles,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log(`Admin updated ${userEmail} to ${newMiles} miles`);
+            return true;
+        } catch (error) {
+            console.error('Admin update failed:', error);
+            return false;
+        }
+    },
+
+    adminAddMiles: async function(userEmail, milesToAdd) {
+        const docRef = this.getUserDoc(userEmail);
+        try {
+            await docRef.update({
+                miles: firebase.firestore.FieldValue.increment(milesToAdd),
+                lifetimeMiles: firebase.firestore.FieldValue.increment(milesToAdd),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log(`Admin added ${milesToAdd} miles to ${userEmail}`);
+            return true;
+        } catch (error) {
+            console.error('Admin add failed:', error);
+            return false;
+        }
     }
 };
+
+// Make FlyMilesManager globally accessible for console/admin access
+window.FlyMilesManager = FlyMilesManager;
 
 // Initialize the FlyMilesManager when the script loads
 FlyMilesManager.init();
