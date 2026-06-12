@@ -304,43 +304,77 @@ if (googleSignupBtn) {
 // Auth state listener - UI updates for all devices
 auth.onAuthStateChanged((user) => {
     const userAccountBtn = document.querySelector('.user-account');
-    const mobileAccountLink = document.getElementById('mobileAccountLink'); // Get the link once, it always exists
+    const mobileAccountLink = document.getElementById('mobileAccountLink');
+    
+    console.log('Auth state changed. User:', user ? user.email : 'null');
+    if (user) console.log('User photoURL:', user.photoURL);
     
     if (user) {
-        console.log('User is signed in:', user.email);
-        
         // Get user's profile photo if available
         const photoURL = user.photoURL;
         
         // Update desktop account icon
         if (userAccountBtn) {
+            // First clear any existing content
+            userAccountBtn.innerHTML = '';
             if (photoURL) {
-                userAccountBtn.innerHTML = `<img src="${photoURL}" alt="Profile" class="user-profile-img">`;
+                const img = document.createElement('img');
+                img.src = photoURL;
+                img.alt = 'Profile';
+                img.className = 'user-profile-img';
+                userAccountBtn.appendChild(img);
+                console.log('Desktop profile image set');
             } else {
-                userAccountBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-user-check';
+                userAccountBtn.appendChild(icon);
             }
             userAccountBtn.title = user.email;
         }
         
-        // Update mobile account icon
+        // Update mobile account icon - using createElement to avoid any innerHTML issues
         if (mobileAccountLink) {
+            // First clear everything in the mobile link
+            mobileAccountLink.innerHTML = '';
+            
             if (photoURL) {
-                // Replace the icon with the profile image in mobile menu
-                mobileAccountLink.innerHTML = `<img src="${photoURL}" alt="Profile" class="mobile-user-profile-img"> Account`;
+                // Create profile image element for mobile
+                const img = document.createElement('img');
+                img.src = photoURL;
+                img.alt = 'Profile';
+                img.className = 'mobile-user-profile-img';
+                mobileAccountLink.appendChild(img);
+                console.log('Mobile profile image created and appended');
             } else {
-                mobileAccountLink.innerHTML = '<i class="fas fa-user-check"></i> Account';
+                // Create checkmark icon if no photo
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-user-check';
+                mobileAccountLink.appendChild(icon);
             }
+            
+            // Add the "Account" text
+            const text = document.createTextNode(' Account');
+            mobileAccountLink.appendChild(text);
         }
     } else {
         console.log('No user is signed in');
         // Reset to logged out state - desktop
         if (userAccountBtn) {
-            userAccountBtn.innerHTML = '<i class="fas fa-user-circle"></i>';
+            userAccountBtn.innerHTML = '';
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-user-circle';
+            userAccountBtn.appendChild(icon);
             userAccountBtn.title = 'Login / Register';
         }
-        // Reset to logged out state - mobile - never lose the ID reference
+        // Reset to logged out state - mobile
         if (mobileAccountLink) {
-            mobileAccountLink.innerHTML = '<i class="fas fa-user-circle" id="mobileAccountIcon"></i> Account';
+            mobileAccountLink.innerHTML = '';
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-user-circle';
+            icon.id = 'mobileAccountIcon';
+            mobileAccountLink.appendChild(icon);
+            const text = document.createTextNode(' Account');
+            mobileAccountLink.appendChild(text);
         }
     }
 });
