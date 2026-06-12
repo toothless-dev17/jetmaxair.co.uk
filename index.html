@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmax Airline - Home</title>
+
+    <!-- SEO + Desc-->
+    <meta name="description"
+        content="The official website for the Jetmax-Airlines UK Private Limited. This site serves as the connection portal between passenger and the airline">
+    <meta name="keywords" content="Jetmax, Airlines, UK, Private, Limited, Limited">
+    <meta name="author" content="toothless">
+
+    <!-- Copyright & Legal -->
+    <meta name="copyright" content="Copyright &copy; 2023 Jetmax-Airlines UK Private Limited. All rights reserved.">
+    <meta name="rights"
+        content="All content in this site is protected by the Copyright Law. Unauthorized use is strictly prohibited.">
+    <meta name="License" content="Apache-2.0">
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="Jetmax Airline">
+    <meta property="og:description"
+        content="The official website for the Jetmax-Airlines UK Private Limited. This site serves as the connection portal between passenger and the airline">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ashenatthanayaka17.github.io/jetmaxair.co.uk/">
+
+    <!-- Links-->
+    <link rel="stylesheet" href="CSS/index-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+    <link rel="icon" href="Assets/jetmax-icon.ico" type="image/x-icon">
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar">
+            <!-- Left: Logos -->
+            <div class="nav-left">
+                <div class="logo-container">
+                    <div class="header-branding">
+                        <h1 class="header-company-logo">Jetmax Airline</h1>
+                        <p class="header-tagline">Every beginning just starts with dreams</p>
+                    </div>
+                    <img src="Assets/oneworld-alliance-logo.jpeg" alt="One World Alliance" class="oneworld-logo">
+                </div>
+            </div>
+
+            <!-- Center/Right: Navigation -->
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link"><i class="fas fa-plane"></i> Plane / Book</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Travel Informations</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Experience</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Fly Miles</a>
+                </li>
+                <li class="nav-item">
+                    <input type="text" placeholder="Search..." class="search-bar">
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Help</a>
+                </li>
+                <li class="nav-item">
+                    <div class="language-selector">
+                        <i class="fas fa-flag-usa country-flag"></i>
+                        <span>EN</span>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="user-account"><i class="fas fa-user-circle"></i></div>
+                </li>
+            </ul>
+
+            <!-- Mobile Menu Toggle (Hamburger) -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Full-Screen Mobile Menu (Slides from Right) -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <div class="mobile-menu-fullscreen" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="mobile-logo">
+                <h2>Jetmax Airline</h2>
+            </div>
+            <button class="close-menu-btn" id="closeMenuBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-plane"></i> Plane / Book</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-info-circle"></i> Travel Informations</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-star"></i> Experience</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-coins"></i> Fly Miles</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-search"></i> Search</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-question-circle"></i> Help</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-flag-usa"></i> Language</a></li>
+            <li><a href="#" class="mobile-nav-link"><i class="fas fa-user-circle"></i> Account</a></li>
+        </ul>
+    </div>
+
+
+    <!-- Auth Modal Popup -->
+    <div class="auth-overlay" id="authOverlay"></div>
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-header">
+            <h2>Welcome to Jetmax</h2>
+            <button class="close-auth-btn" id="closeAuthBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Login</button>
+            <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+        <form class="auth-form" id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    <button type="button" class="toggle-password" data-target="loginPassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="auth-submit-btn">Login</button>
+            <div class="divider"><span>or continue with</span></div>
+            <button type="button" class="google-signin-btn" id="googleLoginBtn">
+                <i class="fab fa-google"></i> Login with Google
+            </button>
+        </form>
+        <form class="auth-form hidden" id="signupForm">
+            <div class="form-group">
+                <label for="signupEmail">Email</label>
+                <input type="email" id="signupEmail" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="signupPassword" required placeholder="Create a password (min. 6 chars)">
+                    <button type="button" class="toggle-password" data-target="signupPassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="auth-submit-btn">Sign Up</button>
+            <div class="divider"><span>or continue with</span></div>
+            <button type="button" class="google-signin-btn" id="googleSignupBtn">
+                <i class="fab fa-google"></i> Sign up with Google
+            </button>
+        </form>
+    </div>
+
+
+    <main>
+        <!-- Body content is empty as requested -->
+    </main>
+
+    <footer>
+        <div class="footer-column">
+            <h2 class="company-logo">Jetmax Airline</h2>
+            <p class="tagline">Every beginning just starts with dreams</p>
+            <p style="color: #cccccc; line-height: 1.6; margin-top: 30px;">Jetmax-Airlines UK Private Limited.
+                Connecting people and places across the globe with comfort and reliability.</p>
+        </div>
+
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="#">Book a Flight</a></li>
+                <li><a href="#">Manage Booking</a></li>
+                <li><a href="#">Check-in</a></li>
+                <li><a href="#">Flight Status</a></li>
+                <li><a href="#">Destinations</a></li>
+                <li><a href="#">About Us</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3>Contact</h3>
+            <div class="contact-info">
+                <p><i class="fas fa-envelope"></i> info@jetmaxair.co.uk</p>
+                <p><i class="fas fa-phone"></i> +44 20 1234 5678</p>
+                <p><i class="fas fa-map-marker-alt"></i> London, United Kingdom</p>
+            </div>
+        </div>
+
+        <div class="footer-column">
+            <h3>Follow Us</h3>
+            <div class="social-links">
+                <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" title="Threads"><i class="fab fa-threads"></i></a>
+                <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="#" title="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="JS/index-script.js"></script>
+</body>
+
+</html>
