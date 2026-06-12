@@ -62,35 +62,7 @@ userAccountBtn.addEventListener('touchend', function(e) {
     }
 }, { passive: false });
 
-// Use event delegation for mobile account link - only trigger on the mobile account link itself
-document.addEventListener('click', function(e) {
-    const mobileAccountLink = document.getElementById('mobileAccountLink');
-    // Only respond to clicks directly on the mobile account link, not anywhere in the document
-    if (mobileAccountLink && e.target.closest('#mobileAccountLink') === mobileAccountLink) {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentUser = auth.currentUser;
-        // Only close menu and open auth modal if user is not logged in
-        if (!currentUser) {
-            closeMobileMenu(); // Close mobile menu first
-            setTimeout(openAuthModal, 300); // Open auth modal after menu closes
-        }
-    }
-});
-
-// Add touch support using event delegation too - only on mobile account link
-document.addEventListener('touchend', function(e) {
-    const mobileAccountLink = document.getElementById('mobileAccountLink');
-    if (mobileAccountLink && e.target.closest('#mobileAccountLink') === mobileAccountLink) {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            closeMobileMenu();
-            setTimeout(openAuthModal, 300);
-        }
-    }
-}, { passive: false });
+// Mobile account link removed from menu - no longer needed
 
 // Close auth modal
 function closeAuthModal() {
@@ -304,10 +276,9 @@ if (googleSignupBtn) {
     }, { passive: false });
 }
 
-// Auth state listener - UI updates for all devices
+// Auth state listener - UI updates for desktop only (mobile account removed)
 auth.onAuthStateChanged((user) => {
     const userAccountBtn = document.querySelector('.user-account');
-    const mobileAccountLink = document.getElementById('mobileAccountLink');
     
     console.log('Auth state changed. User:', user ? user.email : 'null');
     if (user) console.log('User photoURL:', user.photoURL);
@@ -316,7 +287,7 @@ auth.onAuthStateChanged((user) => {
         // Get user's profile photo if available
         const photoURL = user.photoURL;
         
-        // Update desktop account icon
+        // Update desktop account icon only (mobile account removed)
         if (userAccountBtn) {
             // First clear any existing content
             userAccountBtn.innerHTML = '';
@@ -334,50 +305,15 @@ auth.onAuthStateChanged((user) => {
             }
             userAccountBtn.title = user.email;
         }
-        
-        // Update mobile account icon - using createElement to avoid any innerHTML issues
-        if (mobileAccountLink) {
-            // First clear everything in the mobile link
-            mobileAccountLink.innerHTML = '';
-            
-            if (photoURL) {
-                // Create profile image element for mobile
-                const img = document.createElement('img');
-                img.src = photoURL;
-                img.alt = 'Profile';
-                img.className = 'mobile-user-profile-img';
-                mobileAccountLink.appendChild(img);
-                console.log('Mobile profile image created and appended');
-            } else {
-                // Create checkmark icon if no photo
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-user-check';
-                mobileAccountLink.appendChild(icon);
-            }
-            
-            // Add the "Account" text
-            const text = document.createTextNode(' Account');
-            mobileAccountLink.appendChild(text);
-        }
     } else {
         console.log('No user is signed in');
-        // Reset to logged out state - desktop
+        // Reset to logged out state - desktop only
         if (userAccountBtn) {
             userAccountBtn.innerHTML = '';
             const icon = document.createElement('i');
             icon.className = 'fas fa-user-circle';
             userAccountBtn.appendChild(icon);
             userAccountBtn.title = 'Login / Register';
-        }
-        // Reset to logged out state - mobile
-        if (mobileAccountLink) {
-            mobileAccountLink.innerHTML = '';
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-user-circle';
-            icon.id = 'mobileAccountIcon';
-            mobileAccountLink.appendChild(icon);
-            const text = document.createTextNode(' Account');
-            mobileAccountLink.appendChild(text);
         }
     }
 });
