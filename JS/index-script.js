@@ -47,24 +47,40 @@ function openAuthModal() {
     document.body.style.overflow = 'hidden';
 }
 
-userAccountBtn.addEventListener('click', openAuthModal);
+userAccountBtn.addEventListener('click', function() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        openAuthModal();
+    }
+    // If user is logged in, you could add logic here to open a profile menu instead
+});
 userAccountBtn.addEventListener('touchend', function(e) {
     e.preventDefault();
-    openAuthModal();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        openAuthModal();
+    }
 }, { passive: false });
 
 // Add click/touch support for mobile menu Account link
-const mobileAccountLink = document.querySelector('.mobile-nav-link i.fas.fa-user-circle').parentElement;
+const mobileAccountLink = document.getElementById('mobileAccountLink');
 if (mobileAccountLink) {
     mobileAccountLink.addEventListener('click', function(e) {
         e.preventDefault();
-        closeMobileMenu(); // Close mobile menu first
-        setTimeout(openAuthModal, 300); // Open auth modal after menu closes
+        const currentUser = auth.currentUser;
+        // Only close menu and open auth modal if user is not logged in
+        if (!currentUser) {
+            closeMobileMenu(); // Close mobile menu first
+            setTimeout(openAuthModal, 300); // Open auth modal after menu closes
+        }
     });
     mobileAccountLink.addEventListener('touchend', function(e) {
         e.preventDefault();
-        closeMobileMenu();
-        setTimeout(openAuthModal, 300);
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            closeMobileMenu();
+            setTimeout(openAuthModal, 300);
+        }
     }, { passive: false });
 }
 
@@ -283,20 +299,45 @@ if (googleSignupBtn) {
 // Auth state listener - UI updates for all devices
 auth.onAuthStateChanged((user) => {
     const userAccountBtn = document.querySelector('.user-account');
+    const mobileAccountIcon = document.getElementById('mobileAccountIcon');
     
     if (user) {
         console.log('User is signed in:', user.email);
-        // Update UI to show logged in state
+        
+        // Get user's profile photo if available
+        const photoURL = user.photoURL;
+        
+        // Update desktop account icon
         if (userAccountBtn) {
-            userAccountBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+            if (photoURL) {
+                userAccountBtn.innerHTML = `<img src="${photoURL}" alt="Profile" class="user-profile-img">`;
+            } else {
+                userAccountBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+            }
             userAccountBtn.title = user.email;
+        }
+        
+        // Update mobile account icon
+        if (mobileAccountIcon) {
+            const mobileAccountLink = document.getElementById('mobileAccountLink');
+            if (photoURL) {
+                // Replace the icon with the profile image in mobile menu
+                mobileAccountLink.innerHTML = `<img src="${photoURL}" alt="Profile" class="mobile-user-profile-img"> Account`;
+            } else {
+                mobileAccountLink.innerHTML = '<i class="fas fa-user-check"></i> Account';
+            }
         }
     } else {
         console.log('No user is signed in');
-        // Reset to logged out state
+        // Reset to logged out state - desktop
         if (userAccountBtn) {
             userAccountBtn.innerHTML = '<i class="fas fa-user-circle"></i>';
             userAccountBtn.title = 'Login / Register';
+        }
+        // Reset to logged out state - mobile
+        if (mobileAccountIcon) {
+            const mobileAccountLink = document.getElementById('mobileAccountLink');
+            mobileAccountLink.innerHTML = '<i class="fas fa-user-circle" id="mobileAccountIcon"></i> Account';
         }
     }
 });

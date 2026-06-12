@@ -89,6 +89,24 @@ header {
     font-size: 24px;
 }
 
+.user-profile-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0066cc;
+}
+
+.mobile-user-profile-img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #0066cc;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
 /* Mobile Menu Styles */
 .mobile-menu-btn {
     display: none;
