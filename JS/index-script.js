@@ -37,12 +37,18 @@ const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
 const togglePasswordBtns = document.querySelectorAll('.toggle-password');
 
-// Open auth modal when account icon is clicked
-userAccountBtn.addEventListener('click', () => {
+// Open auth modal when account icon is clicked - add touch support
+function openAuthModal() {
     authModal.classList.add('active');
     authOverlay.classList.add('active');
     document.body.style.overflow = 'hidden';
-});
+}
+
+userAccountBtn.addEventListener('click', openAuthModal);
+userAccountBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    openAuthModal();
+}, { passive: false });
 
 // Close auth modal
 function closeAuthModal() {
@@ -52,7 +58,17 @@ function closeAuthModal() {
 }
 
 closeAuthBtn.addEventListener('click', closeAuthModal);
+closeAuthBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    closeAuthModal();
+}, { passive: false });
+
 authOverlay.addEventListener('click', closeAuthModal);
+authOverlay.addEventListener('touchend', function(e) {
+    if (e.target === authOverlay) {
+        closeAuthModal();
+    }
+});
 
 // Tab switching
 authTabs.forEach(tab => {
@@ -70,9 +86,9 @@ authTabs.forEach(tab => {
     });
 });
 
-// Password show/hide toggle
+// Password show/hide toggle - Add mobile touch support
 togglePasswordBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    function togglePassword() {
         const targetId = btn.dataset.target;
         const passwordInput = document.getElementById(targetId);
         const icon = btn.querySelector('i');
@@ -86,7 +102,18 @@ togglePasswordBtns.forEach(btn => {
             icon.classList.remove('fa-eye-slash');
             icon.classList.add('fa-eye');
         }
+    }
+    
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        togglePassword();
     });
+    
+    btn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePassword();
+    }, { passive: false });
 });
 
 
@@ -111,59 +138,147 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// Email/Password Login
-loginForm.addEventListener('submit', async (e) => {
+// Email/Password Login - Enhanced mobile support
+function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
+    const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-
-    try {
-        await auth.signInWithEmailAndPassword(email, password);
-        alert('Login successful! Welcome back!');
-        closeAuthModal();
-        loginForm.reset();
-    } catch (error) {
-        alert('Login failed: ' + error.message);
+    
+    if (!email || !password) {
+        alert('Please fill in all fields');
+        return;
     }
-});
 
-// Email/Password Sign Up
-signupForm.addEventListener('submit', async (e) => {
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            alert('Login successful! Welcome back ' + userCredential.user.email + '!');
+            closeAuthModal();
+            loginForm.reset();
+        })
+        .catch((error) => {
+            console.error('Login error:', error);
+            alert('Login failed: ' + error.message);
+        });
+}
+
+loginForm.addEventListener('submit', handleLogin);
+loginForm.addEventListener('touchend', function(e) {
+    if (e.target.type === 'submit') {
+        handleLogin(e);
+    }
+}, { passive: false });
+
+// Email/Password Sign Up - Enhanced mobile support
+function handleSignup(e) {
     e.preventDefault();
-    const email = document.getElementById('signupEmail').value;
+    const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
-
-    try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        alert('Account created successfully! Welcome to Jetmax!');
-        closeAuthModal();
-        signupForm.reset();
-    } catch (error) {
-        alert('Sign up failed: ' + error.message);
+    
+    if (!email || !password) {
+        alert('Please fill in all fields');
+        return;
     }
-});
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+    }
 
-// Google Sign In / Sign Up
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            alert('Account created successfully! Welcome to Jetmax!');
+            closeAuthModal();
+            signupForm.reset();
+        })
+        .catch((error) => {
+            console.error('Signup error:', error);
+            alert('Sign up failed: ' + error.message);
+        });
+}
+
+signupForm.addEventListener('submit', handleSignup);
+signupForm.addEventListener('touchend', function(e) {
+    if (e.target.type === 'submit') {
+        handleSignup(e);
+    }
+}, { passive: false });
+
+// Mobile-Friendly Google Authentication - FIX for popup blocking
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+}
+
 async function signInWithGoogle() {
     try {
-        await auth.signInWithPopup(googleProvider);
-        alert('Google login successful! Welcome!');
-        closeAuthModal();
+        if (isMobileDevice()) {
+            // Use redirect method for mobile - avoids popup blockers
+            await auth.signInWithRedirect(googleProvider);
+        } else {
+            // Use popup for desktop users
+            const result = await auth.signInWithPopup(googleProvider);
+            if (result.user) {
+                alert('Google login successful! Welcome!');
+                closeAuthModal();
+            }
+        }
     } catch (error) {
+        console.error('Google sign in error:', error);
         alert('Google sign in failed: ' + error.message);
     }
 }
 
-document.getElementById('googleLoginBtn').addEventListener('click', signInWithGoogle);
-document.getElementById('googleSignupBtn').addEventListener('click', signInWithGoogle);
+// Handle redirect result when user returns from Google
+auth.getRedirectResult().then((result) => {
+    if (result && result.user) {
+        console.log('Redirect sign-in successful:', result.user.email);
+        alert('Google login successful! Welcome ' + result.user.email + '!');
+        closeAuthModal();
+    }
+}).catch((error) => {
+    if (error.code !== 'auth/null-update' && error.code !== 'auth/operation-not-supported-in-this-environment') {
+        console.error('Redirect result error:', error);
+    }
+});
 
-// Auth state listener
+// Add both click AND touch events for Google buttons (critical for mobile)
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+const googleSignupBtn = document.getElementById('googleSignupBtn');
+
+if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', signInWithGoogle);
+    googleLoginBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        signInWithGoogle();
+    }, { passive: false });
+}
+
+if (googleSignupBtn) {
+    googleSignupBtn.addEventListener('click', signInWithGoogle);
+    googleSignupBtn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        signInWithGoogle();
+    }, { passive: false });
+}
+
+// Auth state listener - UI updates for all devices
 auth.onAuthStateChanged((user) => {
+    const userAccountBtn = document.querySelector('.user-account');
+    
     if (user) {
         console.log('User is signed in:', user.email);
-        // User is signed in - you can update UI here
+        // Update UI to show logged in state
+        if (userAccountBtn) {
+            userAccountBtn.innerHTML = '<i class="fas fa-user-check"></i>';
+            userAccountBtn.title = user.email;
+        }
     } else {
         console.log('No user is signed in');
-        // User is signed out
+        // Reset to logged out state
+        if (userAccountBtn) {
+            userAccountBtn.innerHTML = '<i class="fas fa-user-circle"></i>';
+            userAccountBtn.title = 'Login / Register';
+        }
     }
 });
