@@ -62,11 +62,13 @@ userAccountBtn.addEventListener('touchend', function(e) {
     }
 }, { passive: false });
 
-// Use event delegation for mobile account link - works even after innerHTML changes
+// Use event delegation for mobile account link - only trigger on the mobile account link itself
 document.addEventListener('click', function(e) {
     const mobileAccountLink = document.getElementById('mobileAccountLink');
-    if (mobileAccountLink && mobileAccountLink.contains(e.target)) {
+    // Only respond to clicks directly on the mobile account link, not anywhere in the document
+    if (mobileAccountLink && e.target.closest('#mobileAccountLink') === mobileAccountLink) {
         e.preventDefault();
+        e.stopPropagation();
         const currentUser = auth.currentUser;
         // Only close menu and open auth modal if user is not logged in
         if (!currentUser) {
@@ -76,11 +78,12 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Add touch support using event delegation too
+// Add touch support using event delegation too - only on mobile account link
 document.addEventListener('touchend', function(e) {
     const mobileAccountLink = document.getElementById('mobileAccountLink');
-    if (mobileAccountLink && mobileAccountLink.contains(e.target)) {
+    if (mobileAccountLink && e.target.closest('#mobileAccountLink') === mobileAccountLink) {
         e.preventDefault();
+        e.stopPropagation();
         const currentUser = auth.currentUser;
         if (!currentUser) {
             closeMobileMenu();
