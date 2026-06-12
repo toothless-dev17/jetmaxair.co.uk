@@ -62,10 +62,10 @@ userAccountBtn.addEventListener('touchend', function(e) {
     }
 }, { passive: false });
 
-// Add click/touch support for mobile menu Account link
-const mobileAccountLink = document.getElementById('mobileAccountLink');
-if (mobileAccountLink) {
-    mobileAccountLink.addEventListener('click', function(e) {
+// Use event delegation for mobile account link - works even after innerHTML changes
+document.addEventListener('click', function(e) {
+    const mobileAccountLink = document.getElementById('mobileAccountLink');
+    if (mobileAccountLink && mobileAccountLink.contains(e.target)) {
         e.preventDefault();
         const currentUser = auth.currentUser;
         // Only close menu and open auth modal if user is not logged in
@@ -73,16 +73,21 @@ if (mobileAccountLink) {
             closeMobileMenu(); // Close mobile menu first
             setTimeout(openAuthModal, 300); // Open auth modal after menu closes
         }
-    });
-    mobileAccountLink.addEventListener('touchend', function(e) {
+    }
+});
+
+// Add touch support using event delegation too
+document.addEventListener('touchend', function(e) {
+    const mobileAccountLink = document.getElementById('mobileAccountLink');
+    if (mobileAccountLink && mobileAccountLink.contains(e.target)) {
         e.preventDefault();
         const currentUser = auth.currentUser;
         if (!currentUser) {
             closeMobileMenu();
             setTimeout(openAuthModal, 300);
         }
-    }, { passive: false });
-}
+    }
+}, { passive: false });
 
 // Close auth modal
 function closeAuthModal() {
@@ -299,7 +304,7 @@ if (googleSignupBtn) {
 // Auth state listener - UI updates for all devices
 auth.onAuthStateChanged((user) => {
     const userAccountBtn = document.querySelector('.user-account');
-    const mobileAccountIcon = document.getElementById('mobileAccountIcon');
+    const mobileAccountLink = document.getElementById('mobileAccountLink'); // Get the link once, it always exists
     
     if (user) {
         console.log('User is signed in:', user.email);
@@ -318,8 +323,7 @@ auth.onAuthStateChanged((user) => {
         }
         
         // Update mobile account icon
-        if (mobileAccountIcon) {
-            const mobileAccountLink = document.getElementById('mobileAccountLink');
+        if (mobileAccountLink) {
             if (photoURL) {
                 // Replace the icon with the profile image in mobile menu
                 mobileAccountLink.innerHTML = `<img src="${photoURL}" alt="Profile" class="mobile-user-profile-img"> Account`;
@@ -334,9 +338,8 @@ auth.onAuthStateChanged((user) => {
             userAccountBtn.innerHTML = '<i class="fas fa-user-circle"></i>';
             userAccountBtn.title = 'Login / Register';
         }
-        // Reset to logged out state - mobile
-        if (mobileAccountIcon) {
-            const mobileAccountLink = document.getElementById('mobileAccountLink');
+        // Reset to logged out state - mobile - never lose the ID reference
+        if (mobileAccountLink) {
             mobileAccountLink.innerHTML = '<i class="fas fa-user-circle" id="mobileAccountIcon"></i> Account';
         }
     }
