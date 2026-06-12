@@ -20,9 +20,12 @@ mobileMenuBtn.addEventListener('click', openMobileMenu);
 closeMenuBtn.addEventListener('click', closeMobileMenu);
 mobileOverlay.addEventListener('click', closeMobileMenu);
 
-// Close menu when clicking on a link
+// Close menu when clicking on a link (except Account link which opens auth modal)
 document.querySelectorAll('.mobile-nav-link').forEach(link => {
-    link.addEventListener('click', closeMobileMenu);
+    const icon = link.querySelector('i');
+    if (!icon || !icon.classList.contains('fa-user-circle')) {
+        link.addEventListener('click', closeMobileMenu);
+    }
 });
 
 
@@ -49,6 +52,21 @@ userAccountBtn.addEventListener('touchend', function(e) {
     e.preventDefault();
     openAuthModal();
 }, { passive: false });
+
+// Add click/touch support for mobile menu Account link
+const mobileAccountLink = document.querySelector('.mobile-nav-link i.fas.fa-user-circle').parentElement;
+if (mobileAccountLink) {
+    mobileAccountLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        closeMobileMenu(); // Close mobile menu first
+        setTimeout(openAuthModal, 300); // Open auth modal after menu closes
+    });
+    mobileAccountLink.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        closeMobileMenu();
+        setTimeout(openAuthModal, 300);
+    }, { passive: false });
+}
 
 // Close auth modal
 function closeAuthModal() {
