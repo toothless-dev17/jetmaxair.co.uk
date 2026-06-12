@@ -72,12 +72,6 @@
                     <a href="#" class="nav-link">Help</a>
                 </li>
                 <li class="nav-item">
-                    <div class="language-selector">
-                        <i class="fas fa-flag-usa country-flag"></i>
-                        <span>EN</span>
-                    </div>
-                </li>
-                <li class="nav-item">
                     <div class="user-account"><i class="fas fa-user-circle"></i></div>
                 </li>
             </ul>
@@ -106,7 +100,7 @@
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-star"></i> Experience</a></li>
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-coins"></i> Fly Miles</a></li>
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-question-circle"></i> Help</a></li>
-            <li><a href="#" class="mobile-nav-link"><i class="fas fa-flag-usa"></i> Language</a></li>
+            <li><a href="#" class="mobile-nav-link" id="mobileUserAccount"><i class="fas fa-user-circle"></i> Account</a></li>
         </ul>
     </div>
 
@@ -141,7 +135,7 @@
             <button type="submit" class="auth-submit-btn">Login</button>
             <div class="divider"><span>or continue with</span></div>
             <button type="button" class="google-signin-btn" id="googleLoginBtn">
-                <i class="fab fa-google"></i> Login with Google
+                <i class="fab fa-google"></i> <span>Login with Google</span>
             </button>
         </form>
         <form class="auth-form hidden" id="signupForm">
@@ -161,9 +155,40 @@
             <button type="submit" class="auth-submit-btn">Sign Up</button>
             <div class="divider"><span>or continue with</span></div>
             <button type="button" class="google-signin-btn" id="googleSignupBtn">
-                <i class="fab fa-google"></i> Sign up with Google
+                <i class="fab fa-google"></i> <span>Sign up with Google</span>
             </button>
         </form>
+    </div>
+
+    <!-- User Profile Card -->
+    <div class="profile-overlay" id="profileOverlay"></div>
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-modal-header">
+            <h2>Your Profile</h2>
+            <button class="close-profile-btn" id="closeProfileBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="profile-content">
+            <div class="profile-avatar">
+                <img id="profileImg" src="" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <h3 id="profileName">Guest User</h3>
+                <p id="profileEmail">guest@example.com</p>
+            </div>
+            <div class="profile-details">
+                <div class="detail-item">
+                    <i class="fas fa-coins"></i>
+                    <span>Fly Miles: <strong id="flyMiles">0</strong></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-birthday-cake"></i>
+                    <span>Birthday: <strong id="birthday">Not set</strong></span>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
     </div>
 
 
@@ -201,7 +226,7 @@
         </div>
 
         <div class="footer-column">
-            <h3>Follow Us</h3>
+            <h3 data-translate="footer_follow">Follow Us</h3>
             <div class="social-links">
                 <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
@@ -213,7 +238,8 @@
         </div>
     </footer>
 
+
+
     <script src="JS/index-script.js"></script>
 </body>
-
 </html>

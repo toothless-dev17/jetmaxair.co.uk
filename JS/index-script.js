@@ -29,7 +29,6 @@ document.querySelectorAll('.mobile-nav-link').forEach(link => {
 });
 
 
-
 // Auth Modal Functionality
 const userAccountBtn = document.querySelector('.user-account');
 const authOverlay = document.getElementById('authOverlay');
@@ -40,6 +39,17 @@ const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
 const togglePasswordBtns = document.querySelectorAll('.toggle-password');
 
+// Profile Modal Functionality
+const profileOverlay = document.getElementById('profileOverlay');
+const profileModal = document.getElementById('profileModal');
+const closeProfileBtn = document.getElementById('closeProfileBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const profileImg = document.getElementById('profileImg');
+const profileName = document.getElementById('profileName');
+const profileEmail = document.getElementById('profileEmail');
+const flyMilesEl = document.getElementById('flyMiles');
+const birthdayEl = document.getElementById('birthday');
+
 // Open auth modal when account icon is clicked - add touch support
 function openAuthModal() {
     authModal.classList.add('active');
@@ -47,22 +57,97 @@ function openAuthModal() {
     document.body.style.overflow = 'hidden';
 }
 
+// Open profile modal when user is logged in
+function openProfileModal(user) {
+    // Update profile information
+    profileEmail.textContent = user.email || 'guest@example.com';
+    profileName.textContent = user.displayName || 'Guest User';
+    
+    // Set profile picture if available
+    if (user.photoURL) {
+        profileImg.src = user.photoURL;
+    } else {
+        profileImg.src = ''; // Reset to default if no photo
+    }
+    
+    // Get additional user data from Firestore (if we had it, currently using defaults)
+    // For now, use some sample data - in production you'd fetch from Firebase Firestore
+    flyMilesEl.textContent = user.metadata.creationTime ? Math.floor(Math.random() * 5000) + 1000 : 0; // Random miles for demo
+    
+    // Check if user has a birthday set (Google provides this if available, otherwise 'Not set')
+    birthdayEl.textContent = 'Not set';
+    
+    // Show the profile modal
+    profileModal.classList.add('active');
+    profileOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close profile modal
+function closeProfileModal() {
+    profileModal.classList.remove('active');
+    profileOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Desktop account button click handler
 userAccountBtn.addEventListener('click', function() {
     const currentUser = auth.currentUser;
     if (!currentUser) {
         openAuthModal();
+    } else {
+        openProfileModal(currentUser);
     }
-    // If user is logged in, you could add logic here to open a profile menu instead
 });
 userAccountBtn.addEventListener('touchend', function(e) {
     e.preventDefault();
     const currentUser = auth.currentUser;
     if (!currentUser) {
         openAuthModal();
+    } else {
+        openProfileModal(currentUser);
     }
 }, { passive: false });
 
-// Mobile account link removed from menu - no longer needed
+// Mobile account button - add the same functionality as desktop
+const mobileUserAccountBtn = document.getElementById('mobileUserAccount');
+mobileUserAccountBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        openAuthModal();
+    } else {
+        // Close mobile menu first
+        closeMobileMenu();
+        openProfileModal(currentUser);
+    }
+});
+mobileUserAccountBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        openAuthModal();
+    } else {
+        // Close mobile menu first
+        closeMobileMenu();
+        openProfileModal(currentUser);
+    }
+}, { passive: false });
+
+// Close profile modal event listeners
+closeProfileBtn.addEventListener('click', closeProfileModal);
+profileOverlay.addEventListener('click', closeProfileModal);
+
+// Logout functionality
+logoutBtn.addEventListener('click', function() {
+    auth.signOut().then(() => {
+        closeProfileModal();
+        alert('You have been logged out successfully.');
+    }).catch((error) => {
+        console.error('Logout error:', error);
+        alert('Logout failed: ' + error.message);
+    });
+});
 
 // Close auth modal
 function closeAuthModal() {
@@ -276,9 +361,10 @@ if (googleSignupBtn) {
     }, { passive: false });
 }
 
-// Auth state listener - UI updates for desktop only (mobile account removed)
+// Auth state listener - UI updates
 auth.onAuthStateChanged((user) => {
     const userAccountBtn = document.querySelector('.user-account');
+    const mobileUserAccountBtn = document.getElementById('mobileUserAccount');
     
     console.log('Auth state changed. User:', user ? user.email : 'null');
     if (user) console.log('User photoURL:', user.photoURL);
@@ -287,7 +373,7 @@ auth.onAuthStateChanged((user) => {
         // Get user's profile photo if available
         const photoURL = user.photoURL;
         
-        // Update desktop account icon only (mobile account removed)
+        // Update desktop account icon
         if (userAccountBtn) {
             // First clear any existing content
             userAccountBtn.innerHTML = '';
@@ -305,15 +391,41 @@ auth.onAuthStateChanged((user) => {
             }
             userAccountBtn.title = user.email;
         }
+        
+        // Update mobile account icon to show profile picture if available
+        if (mobileUserAccountBtn) {
+            mobileUserAccountBtn.innerHTML = '';
+            if (photoURL) {
+                const img = document.createElement('img');
+                img.src = photoURL;
+                img.alt = 'Profile';
+                img.style.width = '24px';
+                img.style.height = '24px';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                img.style.marginRight = '8px';
+                mobileUserAccountBtn.appendChild(img);
+                const span = document.createElement('span');
+                span.textContent = user.displayName || 'Account';
+                mobileUserAccountBtn.appendChild(span);
+            } else {
+                mobileUserAccountBtn.innerHTML = '<i class="fas fa-user-check"></i> ' + (user.displayName || 'Account');
+            }
+        }
     } else {
         console.log('No user is signed in');
-        // Reset to logged out state - desktop only
+        // Reset to logged out state - desktop
         if (userAccountBtn) {
             userAccountBtn.innerHTML = '';
             const icon = document.createElement('i');
             icon.className = 'fas fa-user-circle';
             userAccountBtn.appendChild(icon);
             userAccountBtn.title = 'Login / Register';
+        }
+        
+        // Reset mobile account to default state
+        if (mobileUserAccountBtn) {
+            mobileUserAccountBtn.innerHTML = '<i class="fas fa-user-circle"></i> Account';
         }
     }
 });
