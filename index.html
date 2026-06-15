@@ -28,13 +28,15 @@
     <!-- Links-->
     <link rel="stylesheet" href="CSS/index-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
     <link rel="icon" href="Assets/jetmax-icon.ico" type="image/x-icon">
+    <!-- EmailJS for sending booking notifications -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 
 <body>
@@ -55,7 +57,7 @@
             <!-- Center/Right: Navigation -->
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="#" class="nav-link"><i class="fas fa-plane"></i> Plane / Book</a>
+                    <a href="#bookingSection" class="nav-link"><i class="fas fa-plane"></i> Plan/Book Flight</a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">Travel Informations</a>
@@ -96,12 +98,13 @@
             </button>
         </div>
         <ul class="mobile-nav-links">
-            <li><a href="#" class="mobile-nav-link"><i class="fas fa-plane"></i> Plane / Book</a></li>
+            <li><a href="#bookingSection" class="mobile-nav-link"><i class="fas fa-plane"></i> Plan/Book Flight</a></li>
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-info-circle"></i> Travel Informations</a></li>
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-star"></i> Experience</a></li>
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-coins"></i> Fly Miles</a></li>
             <li><a href="#" class="mobile-nav-link"><i class="fas fa-question-circle"></i> Help</a></li>
-            <li><a href="#" class="mobile-nav-link" id="mobileUserAccount"><i class="fas fa-user-circle"></i> Account</a></li>
+            <li><a href="#" class="mobile-nav-link" id="mobileUserAccount"><i class="fas fa-user-circle"></i>
+                    Account</a></li>
         </ul>
     </div>
 
@@ -186,10 +189,12 @@
                 <div class="detail-item birthday-input-container">
                     <i class="fas fa-birthday-cake"></i>
                     <span>
-                        Birthday: 
+                        Birthday:
                         <strong id="birthday">Not set</strong>
-                        <input type="date" id="birthdayInput" class="birthday-input" style="display:none; margin-left:10px;">
-                        <button id="editBirthdayBtn" class="edit-btn" style="margin-left:10px; background:none; border:none; color:#0066cc; cursor:pointer;">
+                        <input type="date" id="birthdayInput" class="birthday-input"
+                            style="display:none; margin-left:10px;">
+                        <button id="editBirthdayBtn" class="edit-btn"
+                            style="margin-left:10px; background:none; border:none; color:#0066cc; cursor:pointer;">
                             <i class="fas fa-edit"></i>
                         </button>
                     </span>
@@ -201,7 +206,151 @@
 
 
     <main>
-        <!-- Body content is empty as requested -->
+        <!-- Hero Section with Flight Booking Portal -->
+        <section class="booking-section" id="bookingSection">
+            <div class="booking-container">
+                <h2>Book Your Flight with Jetmax</h2>
+
+                <!-- Trip Type Selection - Tabs Style -->
+                <div class="trip-tabs">
+                    <button class="trip-tab active" data-trip="roundtrip">Round Trip</button>
+                    <button class="trip-tab" data-trip="oneway">One Way</button>
+                    <input type="hidden" name="tripType" id="tripType" value="roundtrip">
+                </div>
+
+                <!-- Locations -->
+                <div class="locations-grid">
+                    <div class="form-group">
+                        <label for="from">From</label>
+                        <select id="from" required>
+                            <option value="" selected disabled>Select departure city</option>
+                            <option value="London (LHR)">London (Heathrow - LHR)</option>
+                            <option value="London (LGW)">London (Gatwick - LGW)</option>
+                            <option value="Manchester (MAN)">Manchester (MAN)</option>
+                            <option value="Edinburgh (EDI)">Edinburgh (EDI)</option>
+                            <option value="Birmingham (BHX)">Birmingham (BHX)</option>
+                            <option value="Glasgow (GLA)">Glasgow (GLA)</option>
+                            <option value="Paris (CDG)">Paris (Charles de Gaulle - CDG)</option>
+                            <option value="New York (JFK)">New York (JFK)</option>
+                            <option value="Dubai (DXB)">Dubai (DXB)</option>
+                            <option value="Singapore (SIN)">Singapore (SIN)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="to">To</label>
+                        <select id="to" required>
+                            <option value="" selected disabled>Select arrival city</option>
+                            <option value="London (LHR)">London (Heathrow - LHR)</option>
+                            <option value="London (LGW)">London (Gatwick - LGW)</option>
+                            <option value="Manchester (MAN)">Manchester (MAN)</option>
+                            <option value="Edinburgh (EDI)">Edinburgh (EDI)</option>
+                            <option value="Birmingham (BHX)">Birmingham (BHX)</option>
+                            <option value="Glasgow (GLA)">Glasgow (GLA)</option>
+                            <option value="Paris (CDG)">Paris (Charles de Gaulle - CDG)</option>
+                            <option value="New York (JFK)">New York (JFK)</option>
+                            <option value="Dubai (DXB)">Dubai (DXB)</option>
+                            <option value="Singapore (SIN)">Singapore (SIN)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="dates-grid">
+                    <div class="form-group">
+                        <label for="departureDate">Departure Date</label>
+                        <input type="date" id="departureDate" required>
+                    </div>
+                    <div class="form-group return-date">
+                        <label for="returnDate">Return Date</label>
+                        <input type="date" id="returnDate" required>
+                    </div>
+                </div>
+
+                <!-- Passengers -->
+                <div class="passengers-grid">
+                    <div class="form-group">
+                        <label for="adults">Adults</label>
+                        <input type="number" id="adults" min="1" max="10" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="children">Children</label>
+                        <input type="number" id="children" min="0" max="10" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="infants">Infants</label>
+                        <input type="number" id="infants" min="0" max="5" value="0" required>
+                    </div>
+                </div>
+
+                <!-- Cabin Class -->
+                <div class="cabin-class">
+                    <label>Cabin Class</label>
+                    <select id="cabinClass" required>
+                        <option value="" selected disabled>Select class</option>
+                        <option value="first">First Class</option>
+                        <option value="business">Business Class</option>
+                        <option value="premium-eco">Premium Economy</option>
+                        <option value="economy">Economy</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="button" id="planJourney" class="btn secondary-btn">Plan a Journey</button>
+                    <button type="submit" id="bookJourney" class="btn primary-btn">Book a Journey</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Scrolling Banner Section -->
+        <section class="banner-section">
+            <div class="banner-container">
+                <div class="banner-slider" id="bannerSlider">
+                    <div class="banner-slide active">
+                        <img src="Assets/01.jpeg" alt="Summer Sale Banner">
+                        <div class="banner-content">
+                            <h3>Summer Flight Sale</h3>
+                            <p>Up to 40% off on selected destinations</p>
+                        </div>
+                    </div>
+                    <div class="banner-slide">
+                        <img src="Assets/02.jpeg" alt="Business Class Banner">
+                        <div class="banner-content">
+                            <h3>Luxury Business Class</h3>
+                            <p>Experience premium travel like never before</p>
+                        </div>
+                    </div>
+                    <div class="banner-slide">
+                        <img src="Assets/03.jpeg" alt="Family Vacation Banner">
+                        <div class="banner-content">
+                            <h3>Family Getaway Deals</h3>
+                            <p>Special discounts for family bookings</p>
+                        </div>
+                    </div>
+                    <div class="banner-slide">
+                        <img src="Assets/04.jpeg" alt="New Routes Banner">
+                        <div class="banner-content">
+                            <h3>New Routes Launched</h3>
+                            <p>Explore exciting new destinations</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Banner Controls -->
+                <div class="banner-controls">
+                    <button class="banner-btn prev-btn" id="prevBanner">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <a href="#" class="find-out-more-btn" id="findOutMore">Find out more</a>
+                    <button class="banner-btn next-btn" id="nextBanner">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <!-- Banner Dots -->
+                <div class="banner-dots" id="bannerDots"></div>
+            </div>
+        </section>
     </main>
 
     <footer>
@@ -215,7 +364,7 @@
         <div class="footer-column">
             <h3>Quick Links</h3>
             <ul>
-                <li><a href="#">Book a Flight</a></li>
+                <li><a href="#bookingSection">Book a Flight</a></li>
                 <li><a href="#">Manage Booking</a></li>
                 <li><a href="#">Check-in</a></li>
                 <li><a href="#">Flight Status</a></li>
@@ -228,8 +377,8 @@
             <h3>Contact</h3>
             <div class="contact-info">
                 <p><i class="fas fa-envelope"></i> info@jetmaxair.co.uk</p>
-                <p><i class="fas fa-phone"></i> +44 20 1234 5678</p>
-                <p><i class="fas fa-map-marker-alt"></i> London, United Kingdom</p>
+                <p><i class="fas fa-phone"></i> +44 20 1222 2599</p>
+                <p><i class="fas fa-map-marker-alt"></i> London Heathrow, United Kingdom</p>
             </div>
         </div>
 
@@ -250,5 +399,7 @@
 
     <script src="JS/index-script.js"></script>
     <script src="JS/flymiles.js"></script>
+    <script src="JS/book-my-flight.js"></script>
 </body>
+
 </html>

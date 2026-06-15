@@ -28,6 +28,80 @@ document.querySelectorAll('.mobile-nav-link').forEach(link => {
     }
 });
 
+// Banner Slider Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dotsContainer = document.getElementById('bannerDots');
+    const prevBtn = document.getElementById('prevBanner');
+    const nextBtn = document.getElementById('nextBanner');
+    let currentSlide = 0;
+    let autoSlideInterval;
+    
+    // Create dots
+    slides.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.classList.add('banner-dot');
+        if (index === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => goToSlide(index));
+        dotsContainer.appendChild(dot);
+    });
+    
+    const dots = document.querySelectorAll('.banner-dot');
+    
+    function updateSlides() {
+        slides.forEach((slide, index) => {
+            slide.classList.remove('active');
+            dots[index].classList.remove('active');
+            if (index === currentSlide) {
+                slide.classList.add('active');
+                dots[index].classList.add('active');
+            }
+        });
+    }
+    
+    function goToSlide(index) {
+        currentSlide = index;
+        updateSlides();
+        resetAutoSlide();
+    }
+    
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        updateSlides();
+    }
+    
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        updateSlides();
+    }
+    
+    // Auto slide functionality
+    function startAutoSlide() {
+        autoSlideInterval = setInterval(nextSlide, 4000); // Change slide every 4 seconds
+    }
+    
+    function resetAutoSlide() {
+        clearInterval(autoSlideInterval);
+        startAutoSlide();
+    }
+    
+    // Event listeners for manual controls
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+        nextSlide();
+        resetAutoSlide();
+    });
+    
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+        prevSlide();
+        resetAutoSlide();
+    });
+    
+    // Start auto sliding when page loads
+    if (slides.length > 0) {
+        startAutoSlide();
+    }
+});
+
 
 // Auth Modal Functionality
 const userAccountBtn = document.querySelector('.user-account');
@@ -99,6 +173,86 @@ userAccountBtn.addEventListener('click', function() {
         openProfileModal(currentUser);
     }
 });
+
+// Flight Booking Portal - Passenger Counter Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const counters = {
+        adults: 1,
+        children: 0,
+        infants: 0
+    };
+
+    const adultsCountEl = document.getElementById('adultsCount');
+    const childrenCountEl = document.getElementById('childrenCount');
+    const infantsCountEl = document.getElementById('infantsCount');
+    const totalPassengersEl = document.getElementById('totalPassengers');
+    const adultsInput = document.getElementById('adults');
+    const childrenInput = document.getElementById('children');
+    const infantsInput = document.getElementById('infants');
+
+    function updateDisplay() {
+        if (adultsCountEl) adultsCountEl.textContent = counters.adults;
+        if (childrenCountEl) childrenCountEl.textContent = counters.children;
+        if (infantsCountEl) infantsCountEl.textContent = counters.infants;
+        if (totalPassengersEl) totalPassengersEl.textContent = counters.adults + counters.children + counters.infants;
+        if (adultsInput) adultsInput.value = counters.adults;
+        if (childrenInput) childrenInput.value = counters.children;
+        if (infantsInput) infantsInput.value = counters.infants;
+    }
+
+    function updateButtonStates() {
+        document.querySelectorAll('.counter-btn[data-action="decrement"]').forEach(btn => {
+            const type = btn.dataset.type;
+            btn.disabled = counters[type] <= (type === 'adults' ? 1 : 0);
+        });
+    }
+
+    document.querySelectorAll('.counter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const action = this.dataset.action;
+            
+            if (action === 'increment') {
+                if (counters[type] < 9) { // Max 9 passengers per type
+                    counters[type]++;
+                }
+            } else {
+                if (type === 'adults' && counters[type] > 1) {
+                    counters[type]--;
+                } else if (type !== 'adults' && counters[type] > 0) {
+                    counters[type]--;
+                }
+            }
+            
+            updateDisplay();
+            updateButtonStates();
+        });
+    });
+
+    // Initialize button states
+    updateButtonStates();
+
+    // Booking form submission
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const departure = document.getElementById('departureAirport').value;
+            const arrival = document.getElementById('arrivalAirport').value;
+            
+            if (departure === arrival) {
+                alert('Departure and arrival airports cannot be the same. Please select different airports.');
+                return;
+            }
+            
+            const totalPassengers = counters.adults + counters.children + counters.infants;
+            alert(`Searching for flights from ${departure} to ${arrival} for ${totalPassengers} passenger(s):\n- Adults: ${counters.adults}\n- Children: ${counters.children}\n- Infants: ${counters.infants}`);
+        });
+    }
+});
+
+
 userAccountBtn.addEventListener('touchend', function(e) {
     e.preventDefault();
     const currentUser = auth.currentUser;
@@ -233,8 +387,9 @@ if (!firebase.apps.length) {
     const analytics = firebase.analytics(app);
 }
 
-// Get auth instance
+// Get auth and firestore instances
 const auth = firebase.auth();
+const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 // Email/Password Login - Enhanced mobile support
